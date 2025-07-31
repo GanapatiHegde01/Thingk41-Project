@@ -1,19 +1,19 @@
+# app/__init__.py
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
-
-db = SQLAlchemy()
+from app.models import db  # ✅ import shared instance
 
 def create_app():
-    load_dotenv()  # load .env
-
+    load_dotenv()
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    db.init_app(app)
+    db.init_app(app)  # ✅ attach db instance to app
 
-    from app.models import Product  # Import models to register with SQLAlchemy
+    from app.routes.product_routes import product_bp
+    app.register_blueprint(product_bp)
 
     return app
