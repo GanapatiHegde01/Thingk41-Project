@@ -1,29 +1,36 @@
-# app/models.py
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()  # ✅ make sure you only create one instance
+db = SQLAlchemy()
+
+class Department(db.Model):
+    __tablename__ = 'departments'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+
+    products = db.relationship('Product', back_populates='department')
 
 class Product(db.Model):
     __tablename__ = 'products'
     id = db.Column(db.Integer, primary_key=True)
-    cost = db.Column(db.Float)
-    category = db.Column(db.String)
-    name = db.Column(db.String)
-    brand = db.Column(db.String)
+    name = db.Column(db.String(200))
+    brand = db.Column(db.String(100))
+    category = db.Column(db.String(100))
+    mrp = db.Column(db.Float)
     retail_price = db.Column(db.Float)
-    department = db.Column(db.String)
-    sku = db.Column(db.String)
-    distribution_center_id = db.Column(db.Integer)
+    
+    dept_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=False)
+    department = db.relationship('Department', back_populates='products')
 
     def to_dict(self):
         return {
             'id': self.id,
-            'cost': self.cost,
-            'category': self.category,
             'name': self.name,
             'brand': self.brand,
+            'category': self.category,
+            'mrp': self.mrp,
             'retail_price': self.retail_price,
-            'department': self.department,
-            'sku': self.sku,
-            'distribution_center_id': self.distribution_center_id
+            'department': {
+                'id': self.department.id,
+                'name': self.department.name
+            }
         }

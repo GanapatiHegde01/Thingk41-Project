@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from sqlalchemy.orm import joinedload  # ✅ Import this for eager loading
 from app.models import Product
 from app.utils.response import success_response, error_response
 
@@ -12,7 +13,10 @@ def get_all_products():
     except ValueError:
         return error_response("Invalid pagination parameters", 400)
 
-    pagination = Product.query.paginate(page=page, per_page=per_page, error_out=False)
+    # ✅ Eager load the department relationship
+    pagination = Product.query.options(joinedload(Product.department))\
+        .paginate(page=page, per_page=per_page, error_out=False)
+
     products = [p.to_dict() for p in pagination.items]
 
     return success_response({
@@ -31,7 +35,8 @@ def get_product_by_id(id):
     except ValueError:
         return error_response("Invalid product ID format", 400)
 
-    product = Product.query.get(product_id)
+    # ✅ Eager load the department for a single product
+    product = Product.query.options(joinedload(Product.department)).get(product_id)
     if not product:
         return error_response("Product not found", 404)
 
